@@ -2371,6 +2371,9 @@ class DBImpl : public DB {
 
   // Flag to check whether Close() has been called on this DB
   bool closed_;
+  // Filesystems this DB holds write streams on; protected by mutex_ once
+  // the DB is open
+  std::vector<uint64_t> write_stream_devs_;
   // save the closing status, for re-calling the close()
   Status closing_status_;
   // mutex for DB::Close()

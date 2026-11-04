@@ -24,6 +24,7 @@
 #include "rocksdb/wal_filter.h"
 #include "test_util/sync_point.h"
 #include "util/rate_limiter.h"
+#include "util/write_streams.h"
 
 namespace ROCKSDB_NAMESPACE {
 Options SanitizeOptions(const std::string& dbname, const Options& src,
@@ -1732,6 +1733,22 @@ Status DBImpl::Open(const DBOptions& db_options, const std::string& dbname,
   if (!s.ok()) {
     delete impl;
     return s;
+  }
+
+  // Before recovery, so that files written by recovery get streams too.
+  {
+    std::vector<std::string> dirs = {
+        dbname, impl->immutable_db_options_.GetWalDir()};
+    for (auto& db_path : impl->immutable_db_options_.db_paths) {
+      dirs.push_back(db_path.path);
+    }
+    for (auto& cf : column_families) {
+      for (auto& cf_path : cf.options.cf_paths) {
+        dirs.push_back(cf_path.path);
+      }
+    }
+    WriteStreamsAcquire(dirs, impl->immutable_db_options_.info_log,
+                        &impl->write_stream_devs_);
   }
 
   impl->wal_in_db_path_ = impl->immutable_db_options_.IsWalDirSameAsDBPath();

@@ -105,6 +105,7 @@
 #include "util/mutexlock.h"
 #include "util/stop_watch.h"
 #include "util/string_util.h"
+#include "util/write_streams.h"
 #include "utilities/trace/replayer_impl.h"
 
 namespace ROCKSDB_NAMESPACE {
@@ -688,6 +689,9 @@ Status DBImpl::CloseHelper() {
     // TODO: Check for unlock error
     env_->UnlockFile(db_lock_).PermitUncheckedError();
   }
+
+  WriteStreamsRelease(write_stream_devs_, immutable_db_options_.info_log);
+  write_stream_devs_.clear();
 
   ROCKS_LOG_INFO(immutable_db_options_.info_log, "Shutdown complete");
   LogFlush(immutable_db_options_.info_log);
@@ -2753,6 +2757,15 @@ Status DBImpl::CreateColumnFamilyImpl(const ColumnFamilyOptions& cf_options,
     if (versions_->GetColumnFamilySet()->GetColumnFamily(column_family_name) !=
         nullptr) {
       return Status::InvalidArgument("Column family already exists");
+    }
+    // Streams for cf_paths on filesystems the DB does not use yet.
+    {
+      std::vector<std::string> dirs;
+      for (auto& cf_path : cf_options.cf_paths) {
+        dirs.push_back(cf_path.path);
+      }
+      WriteStreamsAcquire(dirs, immutable_db_options_.info_log,
+                          &write_stream_devs_);
     }
     VersionEdit edit;
     edit.AddColumnFamily(column_family_name);

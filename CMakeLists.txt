@@ -814,6 +814,7 @@ set(SOURCES
         util/status.cc
         util/string_util.cc
         util/thread_local.cc
+        util/write_streams.cc
         util/threadpool_imp.cc
         util/xxhash.cc
         utilities/agg_merge/agg_merge.cc

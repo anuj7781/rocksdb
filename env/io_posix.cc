@@ -37,11 +37,7 @@
 #include "util/autovector.h"
 #include "util/coding.h"
 #include "util/string_util.h"
-
-#if defined(OS_LINUX) && !defined(F_SET_RW_HINT)
-#define F_LINUX_SPECIFIC_BASE 1024
-#define F_SET_RW_HINT (F_LINUX_SPECIFIC_BASE + 12)
-#endif
+#include "util/write_streams.h"
 
 namespace ROCKSDB_NAMESPACE {
 
@@ -1435,7 +1431,8 @@ void PosixWritableFile::SetWriteLifeTimeHint(Env::WriteLifeTimeHint hint) {
   if (hint == write_hint_) {
     return;
   }
-  if (fcntl(fd_, F_SET_RW_HINT, &hint) == 0) {
+  // Send the hint as a write stream.
+  if (WriteStreamsSet(fd_, hint)) {
     write_hint_ = hint;
   }
 #else
