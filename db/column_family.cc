@@ -1408,17 +1408,29 @@ Env::WriteLifeTimeHint ColumnFamilyData::CalculateSSTWriteHint(int level) {
     return Env::WLTH_MEDIUM;
   }
   int base_level = current_->storage_info()->base_level();
+  int num_levels = current_->storage_info()->num_levels();
+  int level_diff = level - base_level;
 
-  // L1: medium, L2: long, ...
-  if (level - base_level >= 2) {
-    return Env::WLTH_EXTREME;
-  } else if (level < base_level) {
-    // There is no restriction which prevents level passed in to be smaller
-    // than base_level.
+  // There is no restriction which prevents level passed in to be smaller
+  // than base_level.
+  if (level_diff < 0) {
     return Env::WLTH_MEDIUM;
   }
-  return static_cast<Env::WriteLifeTimeHint>(level - base_level +
-                            static_cast<int>(Env::WLTH_MEDIUM));
+  if (num_levels <= 5) {
+    // L1: medium, L2: long, L3+: extreme
+    if (level_diff >= 2) {
+      return Env::WLTH_EXTREME;
+    }
+    return static_cast<Env::WriteLifeTimeHint>(
+        static_cast<int>(Env::WLTH_MEDIUM) + level_diff);
+  }
+  // L0-L3: medium, L4: long, L5+: extreme
+  if (level_diff >= 4) {
+    return Env::WLTH_EXTREME;
+  } else if (level_diff == 3) {
+    return Env::WLTH_LONG;
+  }
+  return Env::WLTH_MEDIUM;
 }
 
 Status ColumnFamilyData::AddDirectories(
