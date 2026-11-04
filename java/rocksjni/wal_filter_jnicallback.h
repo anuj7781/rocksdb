@@ -10,6 +10,7 @@
 #define JAVA_ROCKSJNI_WAL_FILTER_JNICALLBACK_H_
 
 #include <jni.h>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>

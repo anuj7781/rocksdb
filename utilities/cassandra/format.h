@@ -56,6 +56,7 @@
 
 #pragma once
 #include <chrono>
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include "rocksdb/merge_operator.h"

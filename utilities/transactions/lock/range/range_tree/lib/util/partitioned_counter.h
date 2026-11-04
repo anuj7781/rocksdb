@@ -53,6 +53,8 @@ Copyright (c) 2006, 2015, Percona and/or its affiliates. All rights reserved.
 
 #pragma once
 
+#include <cstdint>
+
 // Overview: A partitioned_counter provides a counter that can be incremented
 // and the running sum can be read at any time.
 //  We assume that increments are frequent, whereas reading is infrequent.

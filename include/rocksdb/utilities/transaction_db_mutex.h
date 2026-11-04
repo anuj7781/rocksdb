@@ -6,6 +6,7 @@
 #pragma once
 #ifndef ROCKSDB_LITE
 
+#include <cstdint>
 #include <memory>
 
 #include "rocksdb/status.h"

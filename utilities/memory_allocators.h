@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <cstdint>
 
 #include "rocksdb/memory_allocator.h"
 
